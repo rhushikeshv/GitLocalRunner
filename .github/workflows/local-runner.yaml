@@ -1,0 +1,54 @@
+name: Build & Release JAR on Local Runner
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Ensure local build folder exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\my-builds")) {
+            New-Item -ItemType Directory -Path "C:\my-builds" | Out-Null
+          }
+
+      - name: Copy JAR to local persistent folder
+        shell: pwsh
+        run: |
+          Copy-Item "target\*.jar" "C:\my-builds" -Force
+          Write-Host "JAR copied to C:\my-builds"
+
+      - name: Get JAR file name
+        id: jar
+        shell: pwsh
+        run: |
+          $file = Get-ChildItem target\*.jar | Select-Object -First 1
+          echo "filename=$($file.Name)" >> $env:GITHUB_OUTPUT
+          echo "filepath=$($file.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v1.0.${{ github.run_number }}
+          name: "Custom Project Release ${{ github.run_number }}"
+          body: "Automated release via Local Self-Hosted Runner"
+          artifacts: ${{ steps.jar.outputs.filepath }}
+          artifactContentType: application/java-archive
