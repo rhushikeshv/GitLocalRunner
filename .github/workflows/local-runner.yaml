@@ -23,19 +23,9 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests
 
-      - name: Ensure local build folder exists
-        shell: pwsh
-        run: |
-          if (-not (Test-Path "C:\my-builds")) {
-            New-Item -ItemType Directory -Path "C:\my-builds" | Out-Null
-          }
+      
 
-      - name: Copy JAR to local persistent folder
-        shell: pwsh
-        run: |
-          Copy-Item "target\*.jar" "C:\my-builds" -Force
-          Write-Host "JAR copied to C:\my-builds"
-
+     
       - name: Get JAR file name
         id: jar
         shell: pwsh
