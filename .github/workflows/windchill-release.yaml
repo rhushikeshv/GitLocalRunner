@@ -1,0 +1,66 @@
+name: Windchill PLM Build & Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-deploy-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set/Configure Windchill Pre-requisites
+      - name: Set/Configure Windchill pre-req
+        shell: bash
+        run: |
+          echo "Configuration completed"
+
+      # Step 3: Check - Validate the Windchill build
+      - name: Validation
+        shell: bash
+        run: |
+          echo "Validation completed"
+
+      # Step 4: Build Windchill Code
+      - name: Build with Ant
+        shell: bash
+        run: |
+          echo "Build completed"
+          # Example placeholder:
+          # ant -f build.xml clean all
+
+      # Step 5: Deploy to Windchill DEV Server
+      - name: Deploy to Windchill Web Tier
+        shell: bash
+        run: |
+          echo "Deployment completed"
+          # Example placeholder:
+          # ./scripts/deploy.sh --env dev
+
+      # Step 6: Package the release
+      - name: Create release zip
+        shell: bash
+        run: |
+          ZIP_NAME="windchill-release.zip"
+          rm -f "$ZIP_NAME"
+          # Create zip from repo root, excluding VCS, workflows, and the zip itself
+          zip -r "$ZIP_NAME" . \
+            -x ".git/*" ".git" ".github/*" "$ZIP_NAME"
+          ls -lh "$ZIP_NAME"
+
+      # Step 7: Create GitHub Release for Deployment
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ inputs.release_tag != '' && inputs.release_tag || format('v1.0.%s', github.run_number) }}
+          name: "Custom Project Release ${{ github.run_number }}"
+          body: "Automated release via Local Self-Hosted Runner"
+          artifacts: "windchill-release.zip"
+          generateReleaseNotes: true
+          makeLatest: true
