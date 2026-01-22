@@ -59,7 +59,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ inputs.release_tag != '' && inputs.release_tag || format('v1.0.%s', github.run_number) }}
-          name: "Custom Project Release ${{ github.run_number }}"
+          name: "Windchill Production Release ${{ github.run_number }}"
           body: "Automated release via Local Self-Hosted Runner"
           artifacts: "windchill-release.zip"
           generateReleaseNotes: true
